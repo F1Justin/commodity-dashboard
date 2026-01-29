@@ -1,0 +1,27 @@
+# FastAPI 框架
+fastapi
+uvicorn[standard]
+
+# 定时任务
+apscheduler
+
+# 数据采集
+akshare
+yfinance
+requests
+
+# 数据处理
+pandas
+numpy
+
+# 数据库
+sqlalchemy
+
+# 数据导出
+openpyxl
+
+# CORS 支持
+python-multipart
+
+# 环境变量
+python-dotenv

@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0f1419;
+  --bg-card: #1a1f2e;
+  --bg-hover: #242d3a;
+  --border-color: #2a3441;
+  --text-primary: #e7e9ea;
+  --text-secondary: #8b98a5;
+  --text-muted: #6b7280;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* 卡片样式 */
+.card {
+  @apply bg-[#1a1f2e] rounded-xl border border-[#2a3441] p-6;
+}
+
+.card:hover {
+  @apply border-[#3a4451];
+}
+
+/* 信号灯样式 */
+.signal-light {
+  @apply w-3 h-3 rounded-full;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.signal-light.red {
+  @apply bg-red-500 text-red-500;
+}
+
+.signal-light.green {
+  @apply bg-emerald-500 text-emerald-500;
+}
+
+.signal-light.yellow {
+  @apply bg-amber-500 text-amber-500;
+}
+
+.signal-light.gray {
+  @apply bg-gray-500 text-gray-500;
+  box-shadow: none;
+}
+
+/* 表格样式 */
+.data-table {
+  @apply w-full text-sm;
+}
+
+.data-table th {
+  @apply px-4 py-3 text-left text-gray-400 font-medium bg-[#151a24];
+}
+
+.data-table td {
+  @apply px-4 py-3 border-t border-[#2a3441];
+}
+
+.data-table tr:hover td {
+  @apply bg-[#242d3a];
+}
+
+/* 溢价率颜色 */
+.premium-positive {
+  @apply text-red-400 font-semibold;
+}
+
+.premium-negative {
+  @apply text-emerald-400 font-semibold;
+}
+
+.premium-neutral {
+  @apply text-gray-400;
+}
+
+/* 导航样式 */
+.nav-link {
+  @apply px-4 py-2 rounded-lg text-gray-400 hover:bg-[#242d3a] hover:text-white transition-colors flex items-center gap-2;
+}
+
+.nav-link.active {
+  @apply bg-primary-500/20 text-primary-400 font-medium;
+}
+
+/* 选择框样式 */
+select {
+  @apply bg-[#1a1f2e] border-[#2a3441] text-gray-200;
+}
+
+select:focus {
+  @apply border-primary-500 ring-1 ring-primary-500 outline-none;
+}
+
+/* 输入框样式 */
+input[type="date"] {
+  @apply bg-[#1a1f2e] border-[#2a3441] text-gray-200;
+  color-scheme: dark;
+}
+
+input[type="date"]:focus {
+  @apply border-primary-500 ring-1 ring-primary-500 outline-none;
+}
+
+/* 按钮样式 */
+.btn-primary {
+  @apply bg-primary-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a4451;
+}
