@@ -4,22 +4,31 @@ services:
   backend:
     build: ./backend
     container_name: commodity-backend
-    network_mode: host  # 监听 8000 端口，可访问本地 QQ 机器人
+    ports:
+      - "8000:8000"
     volumes:
       - ./backend/data:/app/data
       - ./.env:/app/.env
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # 允许容器访问宿主机
 
   frontend:
     build: ./frontend
     container_name: commodity-frontend
-    network_mode: host  # 监听 3001 端口（避免与 QQ 机器人 3000 冲突）
+    ports:
+      - "3001:3001"
     environment:
       - TZ=Asia/Shanghai
       - PORT=3001
-      - BACKEND_URL=http://127.0.0.1:8000
+      - HOSTNAME=0.0.0.0
+      - BACKEND_URL=http://backend:8000
     depends_on:
       - backend
     restart: unless-stopped
+
+networks:
+  default:
+    name: commodity-network

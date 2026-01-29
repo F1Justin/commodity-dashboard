@@ -3,8 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   async rewrites() {
-    // 生产环境使用环境变量或默认值
-    const backendUrl = process.env.BACKEND_URL || 'http://host.docker.internal:8000';
+    // 生产环境使用环境变量，默认指向 Docker 内部网络的 backend 服务
+    const backendUrl = process.env.BACKEND_URL || 'http://backend:8000';
     
     return [
       {
