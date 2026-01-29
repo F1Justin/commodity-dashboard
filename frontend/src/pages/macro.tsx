@@ -23,15 +23,15 @@ export default function Macro() {
   })) || [];
 
   // 转换油价数据格式
-  const oilSeries = oilData
+  const oilSeries = (oilData as any)
     ? [
         {
           name: '92号汽油',
-          data: oilData.gasoline?.data?.map((d: any) => [d.date, d.price]) || [],
+          data: (oilData as any).gasoline?.data?.map((d: any) => [d.date, d.price]) || [],
         },
         {
           name: '0号柴油',
-          data: oilData.diesel?.data?.map((d: any) => [d.date, d.price]) || [],
+          data: (oilData as any).diesel?.data?.map((d: any) => [d.date, d.price]) || [],
         },
       ]
     : [];

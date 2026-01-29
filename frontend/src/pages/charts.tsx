@@ -215,11 +215,11 @@ export default function Charts() {
         
         const promises = chartGroups.map(async (group) => {
           try {
-            const data = await fetchNormalized(group.id, selectedPeriod);
+            const data = await fetchNormalized(group.id, selectedPeriod) as ChartData;
             return { id: group.id, data };
           } catch (e) {
             console.error(`Failed to fetch ${group.id}:`, e);
-            return { id: group.id, data: null };
+            return { id: group.id, data: null as ChartData | null };
           }
         });
         
