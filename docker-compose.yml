@@ -4,7 +4,7 @@ services:
   backend:
     build: ./backend
     container_name: commodity-backend
-    network_mode: host  # 使用宿主机网络，可访问 127.0.0.1 上的 QQ 机器人
+    network_mode: host  # 监听 8000 端口，可访问本地 QQ 机器人
     volumes:
       - ./backend/data:/app/data
       - ./.env:/app/.env
@@ -15,11 +15,11 @@ services:
   frontend:
     build: ./frontend
     container_name: commodity-frontend
-    ports:
-      - "3001:3000"
+    network_mode: host  # 监听 3001 端口（避免与 QQ 机器人 3000 冲突）
     environment:
       - TZ=Asia/Shanghai
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - PORT=3001
+      - BACKEND_URL=http://127.0.0.1:8000
     depends_on:
       - backend
     restart: unless-stopped
