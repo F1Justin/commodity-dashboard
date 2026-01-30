@@ -1,13 +1,15 @@
 """
 汇率数据采集器 - 使用多个数据源确保可靠性
-根据 接口.md 使用:
-- fx_spot_quote: 人民币外汇即期报价
-- forex_spot_em: 东方财富网-外汇市场-所有汇率-实时行情数据
+数据源优先级:
+1. fx_spot_quote: 人民币外汇即期报价 (akshare)
+2. forex_spot_em: 东方财富网外汇行情 (akshare)
+3. yfinance: Yahoo Finance CNY=X (备用)
 """
 import math
 from datetime import datetime
 from typing import Optional, Tuple
 import akshare as ak
+import yfinance as yf
 
 from app.database import SessionLocal, ExchangeRate
 
@@ -68,10 +70,28 @@ def get_exchange_rate_forex_em() -> Optional[float]:
     return None
 
 
+def get_exchange_rate_yfinance() -> Optional[float]:
+    """
+    从 Yahoo Finance 获取汇率
+    使用 CNY=X 代码
+    """
+    try:
+        ticker = yf.Ticker('CNY=X')
+        data = ticker.history(period='1d')
+        if data is not None and not data.empty:
+            rate = float(data['Close'].iloc[-1])
+            if is_valid_rate(rate):
+                print(f"yfinance 获取汇率成功: {rate}")
+                return rate
+    except Exception as e:
+        print(f"yfinance 获取汇率失败: {e}")
+    return None
+
+
 def get_current_exchange_rate() -> Tuple[float, str]:
     """
     获取当前美元兑人民币汇率
-    优先使用 fx_spot_quote，失败则用 forex_spot_em
+    按优先级尝试多个数据源
     """
     # 方法1: fx_spot_quote (人民币外汇即期报价)
     rate = get_exchange_rate_fx_spot()
@@ -83,8 +103,13 @@ def get_current_exchange_rate() -> Tuple[float, str]:
     if rate:
         return rate, "FOREX_EM"
     
+    # 方法3: yfinance (Yahoo Finance)
+    rate = get_exchange_rate_yfinance()
+    if rate:
+        return rate, "YFINANCE"
+    
     # 兜底: 使用默认值
-    print("⚠️ 无法获取实时汇率，使用默认值 7.25")
+    print("⚠️ 所有数据源都失败，使用默认值 7.25")
     return 7.25, "DEFAULT"
 
 
