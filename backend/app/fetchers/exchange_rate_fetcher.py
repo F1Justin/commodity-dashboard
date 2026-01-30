@@ -4,11 +4,23 @@
 - fx_spot_quote: 人民币外汇即期报价
 - forex_spot_em: 东方财富网-外汇市场-所有汇率-实时行情数据
 """
+import math
 from datetime import datetime
 from typing import Optional, Tuple
 import akshare as ak
 
 from app.database import SessionLocal, ExchangeRate
+
+
+def is_valid_rate(rate: float) -> bool:
+    """检查汇率值是否有效"""
+    if rate is None:
+        return False
+    if math.isnan(rate) or math.isinf(rate):
+        return False
+    if rate < 1 or rate > 20:  # 汇率应该在合理范围内
+        return False
+    return True
 
 
 def get_exchange_rate_fx_spot() -> Optional[float]:
@@ -22,7 +34,9 @@ def get_exchange_rate_fx_spot() -> Optional[float]:
             usd_row = df[df['货币对'] == 'USD/CNY']
             if not usd_row.empty:
                 rate = float(usd_row.iloc[0]['买报价'])
-                return rate
+                if is_valid_rate(rate):
+                    return rate
+                print(f"fx_spot_quote 返回无效值: {rate}")
     except Exception as e:
         print(f"fx_spot_quote 获取汇率失败: {e}")
     return None
@@ -40,13 +54,15 @@ def get_exchange_rate_forex_em() -> Optional[float]:
             usd_row = df[df['名称'] == '美元人民币中间价']
             if not usd_row.empty:
                 rate = float(usd_row.iloc[0]['最新价'])
-                return rate
+                if is_valid_rate(rate):
+                    return rate
             
             # 备选: 美元兑离岸人民币
             usd_row = df[df['名称'] == '美元兑离岸人民币']
             if not usd_row.empty:
                 rate = float(usd_row.iloc[0]['最新价'])
-                return rate
+                if is_valid_rate(rate):
+                    return rate
     except Exception as e:
         print(f"forex_spot_em 获取汇率失败: {e}")
     return None
@@ -77,6 +93,12 @@ def fetch_exchange_rate():
     采集并保存汇率数据
     """
     rate, source = get_current_exchange_rate()
+    print(f"当前汇率: {rate} (来源: {source})")
+    
+    # 验证汇率值
+    if not is_valid_rate(rate):
+        print(f"⚠️ 汇率值无效 ({rate})，跳过保存")
+        return None
     
     db = SessionLocal()
     try:
