@@ -1,10 +1,22 @@
 """
 管理 API - 手动触发任务
 """
+import math
 from fastapi import APIRouter
 from datetime import datetime
+from typing import Any
 
 router = APIRouter()
+
+
+def clean_float(value: Any) -> Any:
+    """清理无效的浮点数值（NaN, Infinity）"""
+    if value is None:
+        return None
+    if isinstance(value, float):
+        if math.isnan(value) or math.isinf(value):
+            return None
+    return value
 
 
 @router.post("/admin/fetch-all")
@@ -24,7 +36,7 @@ def trigger_fetch_all():
     # 1. 更新汇率
     try:
         rate = fetch_exchange_rate()
-        results["tasks"].append({"name": "汇率更新", "status": "success", "rate": rate})
+        results["tasks"].append({"name": "汇率更新", "status": "success", "rate": clean_float(rate)})
     except Exception as e:
         results["tasks"].append({"name": "汇率更新", "status": "error", "error": str(e)})
     
@@ -81,7 +93,7 @@ def trigger_update_exchange_rate():
     
     try:
         rate = fetch_exchange_rate()
-        return {"status": "success", "rate": rate}
+        return {"status": "success", "rate": clean_float(rate)}
     except Exception as e:
         return {"status": "error", "error": str(e)}
 
@@ -114,7 +126,7 @@ def get_status():
         return {
             "price_records": price_count,
             "latest_price_time": latest_price.timestamp.isoformat() if latest_price else None,
-            "exchange_rate": latest_rate.rate if latest_rate else None,
+            "exchange_rate": clean_float(latest_rate.rate) if latest_rate else None,
             "exchange_rate_time": latest_rate.timestamp.isoformat() if latest_rate else None,
             "exchange_rate_source": latest_rate.source if latest_rate else None,
         }
