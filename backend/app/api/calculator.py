@@ -1,10 +1,11 @@
 """
 溢价率计算器 API
 """
+import math
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime, timedelta
 
 from app.database import get_db, SpreadData, RatioData, ExchangeRate
@@ -12,6 +13,32 @@ from app.config import PREMIUM_PAIRS
 from app.calculator.premium_calculator import calculate_current_premiums
 
 router = APIRouter()
+
+
+def clean_float(value: Any) -> Any:
+    """清理无效的浮点数值（NaN, Infinity）"""
+    if value is None:
+        return None
+    if isinstance(value, float):
+        if math.isnan(value) or math.isinf(value):
+            return None
+    return value
+
+
+def clean_dict(d: dict) -> dict:
+    """递归清理字典中的无效浮点数"""
+    if not isinstance(d, dict):
+        return d
+    
+    cleaned = {}
+    for key, value in d.items():
+        if isinstance(value, dict):
+            cleaned[key] = clean_dict(value)
+        elif isinstance(value, list):
+            cleaned[key] = [clean_dict(v) if isinstance(v, dict) else clean_float(v) for v in value]
+        else:
+            cleaned[key] = clean_float(value)
+    return cleaned
 
 
 def get_signal(value: float, thresholds: dict) -> str:
@@ -88,7 +115,8 @@ def get_calculator_data(db: Session = Depends(get_db)):
     
     result["signals"] = signals
     
-    return result
+    # 清理无效浮点数，防止 JSON 序列化错误
+    return clean_dict(result)
 
 
 @router.get("/calculator/history")
@@ -120,13 +148,13 @@ def get_premium_history(
     
     pair_config = PREMIUM_PAIRS.get(pair, {})
     
-    return {
+    return clean_dict({
         "pair": pair,
         "name": pair_config.get("name", pair),
         "period": f"{days}天",
         "count": len(data),
         "data": data
-    }
+    })
 
 
 @router.get("/calculator/ratios")
@@ -157,10 +185,10 @@ def get_ratio_history(
         "COPPER_GOLD": "铜金比"
     }
     
-    return {
+    return clean_dict({
         "ratio_type": ratio_type,
         "name": name_map.get(ratio_type, ratio_type),
         "period": f"{days}天",
         "count": len(data),
         "data": data
-    }
+    })
