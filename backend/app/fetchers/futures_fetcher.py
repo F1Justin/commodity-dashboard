@@ -77,7 +77,7 @@ def retry_with_backoff(func: Callable, max_retries: int = 3, base_delay: float =
 def fetch_cn_futures_prices() -> Dict[str, float]:
     """
     获取国内期货实时价格
-    使用 futures_main_sina 接口，带重试机制
+    使用 futures_zh_spot 接口获取真正的实时行情
     """
     prices = {}
     
@@ -85,9 +85,13 @@ def fetch_cn_futures_prices() -> Dict[str, float]:
         try:
             @retry_with_backoff
             def get_price():
-                df = ak.futures_main_sina(symbol=code)
+                # 使用 futures_zh_spot 获取实时价格
+                df = ak.futures_zh_spot(symbol=code, market="CF", adjust="0")
                 if df is not None and not df.empty:
-                    return float(df.iloc[-1]['收盘价'])
+                    # current_price 是当前实时价格
+                    price = df.iloc[0]['current_price']
+                    if price and str(price) != 'nan' and float(price) > 0:
+                        return float(price)
                 return None
             
             price = get_price()
